@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,11 +19,19 @@ class _FanLivState extends State<FanLiv> {
   double takaPerUnit = 10; // Cost per unit in your currency
   late SharedPreferences prefs;
   double elapsedUnitFanliv = 0;
+  double? current;
+  DatabaseReference? databaseReference2;
+  DatabaseReference? databaseReference;
 
   @override
   void initState() {
     super.initState();
     initializeSharedPreferences();
+    databaseReference =
+        FirebaseDatabase.instance.reference().child('data').child('3');
+    databaseReference2 = FirebaseDatabase.instance.reference();
+    loadCurrentAndVoltage();
+    loadIsFanOn();
   }
 
   Future<void> initializeSharedPreferences() async {
@@ -59,6 +68,35 @@ class _FanLivState extends State<FanLiv> {
     saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
   }
 
+  void loadIsFanOn() {
+    databaseReference2 = FirebaseDatabase.instance.ref().child('switches');
+    databaseReference2!.child('fan').onValue.listen((event) {
+      DataSnapshot snapshot = event.snapshot;
+      final value = snapshot.value;
+      if (value is bool) {
+        setState(() {
+          isFanOn = value;
+        });
+      }
+    }).onError((error) {
+      print('Error loading isLightOn from Firebase: $error');
+    });
+  }
+
+  void updateIsFanOn(bool newValue) {
+    databaseReference2 =
+        FirebaseDatabase.instance.reference().child('switches');
+    databaseReference2!.update({'fan': newValue}).then((_) {
+      // Update the UI immediately when the value is updated in the database
+      setState(() {
+        isFanOn = newValue;
+      });
+      print('isLightOn updated successfully');
+    }).catchError((error) {
+      print('Error updating isLightOn: $error');
+    });
+  }
+
   void onFanSwitchChanged(bool newValue) {
     setState(() {
       if (newValue) {
@@ -80,7 +118,50 @@ class _FanLivState extends State<FanLiv> {
         }
       }
       isFanOn = newValue;
+
+      // Update the isLightOn value in the database when the switch changes
+      updateIsFanOn(isFanOn);
     });
+  }
+
+  void loadCurrentAndVoltage() {
+    if (databaseReference != null) {
+      databaseReference!.onValue.listen((event) {
+        DataSnapshot dataSnapshot = event.snapshot;
+        Map<dynamic, dynamic>? data =
+            dataSnapshot.value as Map<dynamic, dynamic>?;
+
+        if (data != null) {
+          // Extract all current values from the data
+          List<double> currentValues = [];
+
+          data.forEach((timestamp, values) {
+            if (values is Map<dynamic, dynamic> && values.containsKey('amp')) {
+              double? currentData = values['amp'] as double?;
+              if (currentData != null) {
+                currentValues.add(currentData);
+              }
+            }
+          });
+
+          if (currentValues.isNotEmpty) {
+            // Calculate the average current value
+            double sum = currentValues.reduce((a, b) => a + b);
+            double averageCurrent = sum / currentValues.length;
+
+            // Update the state with the average current value
+            setState(() {
+              current = averageCurrent;
+            });
+          }
+        }
+      }, onError: (error) {
+        print('Error loading data from Firebase: $error');
+      });
+    } else {
+      print(
+          'Database reference is null. Make sure it is properly initialized.');
+    }
   }
 
   @override

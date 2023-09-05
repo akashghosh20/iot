@@ -78,17 +78,6 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
     });
   }
 
-  // void resetCalculations() {
-  //   setState(() {
-  //     elapsedDuration = Duration.zero;
-  //     elapsedUnitLightliv = 0;
-  //   });
-
-  //   saveElapsedTime(Duration.zero); // Reset elapsed time in SharedPreferences
-  //   saveElapsedTaka(0); // Reset elapsed taka in SharedPreferences
-  //   saveElapsedUnit(0);
-  // }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
@@ -121,25 +110,6 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
     // loadElapsedTime();
   }
 
-  // void loadElapsedTime() {
-  //   final storedDuration = prefs.getInt('lightLiv_elapsed_duration') ?? 0;
-  //   setState(() {
-  //     elapsedDuration = Duration(seconds: storedDuration);
-  //   });
-  // }
-
-  // Future<void> saveElapsedTime(Duration duration) async {
-  //   await prefs.setInt('lightLiv_elapsed_duration', duration.inSeconds);
-  // }
-
-  // Future<void> saveElapsedTaka(double taka) async {
-  //   await prefs.setDouble('lightLiv_elapsed_taka', taka);
-  // }
-
-  // Future<void> saveElapsedUnit(double unit) async {
-  //   await prefs.setDouble('lightLiv_elapsed_unit', unit);
-  // }
-
   void onLightSwitchChanged(bool newValue) {
     setState(() {
       if (newValue) {
@@ -149,21 +119,9 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
           final DateTime endTime = DateTime.now();
           elapsedDuration += endTime.difference(startTime!);
           startTime = null;
-          // saveElapsedTime(elapsedDuration);
-
-          // Calculate and save elapsed taka
-          // double elapsedTaka = calculateElapsedTaka(
-          //     elapsedDuration, voltage! * current! * 0.89 / 1000);
-          // elapsedUnitLightliv = calculateElapsedUnit(
-          //     elapsedDuration, voltage! * current! * 0.89 / 1000);
-          // saveElapsedUnit(elapsedUnitLightliv);
-          // saveElapsedTaka(elapsedTaka);
         }
       }
       updateIsLightOn(newValue);
-
-      // Update the isLightOn value in the database when the switch changes
-      // updateIsLightOn(isLightOn);
     });
   }
 
