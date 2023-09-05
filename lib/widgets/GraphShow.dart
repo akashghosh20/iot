@@ -1,29 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:project_neal/constant.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ShowGraph extends StatefulWidget {
   ShowGraph({Key? key}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _ShowGraphState createState() => _ShowGraphState();
 }
 
-class _MyHomePageState extends State<ShowGraph> {
+double totalElapsedTaka = 0;
+
+class _ShowGraphState extends State<ShowGraph> {
   List<_SalesData> data = [
-    _SalesData('Jan', 35),
-    _SalesData('Feb', 28),
-    _SalesData('Mar', 34),
-    _SalesData('Apr', 32),
-    _SalesData('May', 40),
-    _SalesData('June', 40),
-    _SalesData('July', 40),
-    _SalesData('August', 40),
-    _SalesData('Sep', 40),
-    _SalesData('Oct', 40),
-    _SalesData('Nov', 40),
-    _SalesData('Dec', 40),
+    _SalesData('Jan', 0),
+    _SalesData('Feb', 0),
+    _SalesData('Mar', 0),
+    _SalesData('Apr', 0),
+    _SalesData('May', 0),
+    _SalesData('June', 0),
+    _SalesData('July', 0),
+    _SalesData('August', 0),
+    _SalesData('Sep', totalElapsedTaka),
+    _SalesData('Oct', 0),
+    _SalesData('Nov', 0),
+    _SalesData('Dec', 0),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    loadTotalElapsedTaka(); // Load the totalElapsedTaka value from SharedPreferences
+  }
+
+  Future<void> loadTotalElapsedTaka() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      totalElapsedTaka = prefs.getDouble('total_elapsed_taka') ?? 0;
+      // Update the data with the loaded totalElapsedTaka value
+      data[8].sales =
+          totalElapsedTaka; // Assuming 'Sep' corresponds to the 9th data point
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,5 +88,5 @@ class _SalesData {
   _SalesData(this.year, this.sales);
 
   final String year;
-  final double sales;
+  double sales;
 }

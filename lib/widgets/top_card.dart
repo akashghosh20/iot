@@ -39,16 +39,6 @@ class _TopCardState extends State<TopCard> {
     double lightBathElapsedUnit =
         prefs.getDouble('lightBath_elapsed_unit') ?? 0;
 
-// ------------ Printing ------------------------
-
-    print(fanLivElapsedUnit);
-    print(fanBedElapsedUnit);
-    print(lightBedElapsedUnit);
-    print(lightLivElapsedUnit);
-    print(lightBathElapsedUnit);
-
-//--------------------------------------
-
     double totalfan = fanLivElapsedTaka + fanBedElapsedTaka;
     double totalLight =
         lightBathElapsedTaka + lightLivElapsedTaka + lightBedElapsedTaka;
@@ -60,6 +50,9 @@ class _TopCardState extends State<TopCard> {
           lightLivElapsedUnit +
           lightBedElapsedUnit;
     });
+
+    // Save totalElapsedTaka in SharedPreferences
+    prefs.setDouble('total_elapsed_taka', totalElapsedTaka);
   }
 
   void resetValues() {
