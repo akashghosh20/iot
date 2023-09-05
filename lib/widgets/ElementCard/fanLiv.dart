@@ -31,12 +31,12 @@ class _FanLivState extends State<FanLiv> {
         FirebaseDatabase.instance.reference().child('data').child('3');
     databaseReference2 = FirebaseDatabase.instance.reference();
     loadCurrentAndVoltage();
-    loadIsFanOn();
   }
 
   Future<void> initializeSharedPreferences() async {
     prefs = await SharedPreferences.getInstance();
     loadElapsedTime();
+    loadIsFanOn(); // Load the isFanOn state during initialization
   }
 
   void loadElapsedTime() {
@@ -69,17 +69,9 @@ class _FanLivState extends State<FanLiv> {
   }
 
   void loadIsFanOn() {
-    databaseReference2 = FirebaseDatabase.instance.ref().child('switches');
-    databaseReference2!.child('fan').onValue.listen((event) {
-      DataSnapshot snapshot = event.snapshot;
-      final value = snapshot.value;
-      if (value is bool) {
-        setState(() {
-          isFanOn = value;
-        });
-      }
-    }).onError((error) {
-      print('Error loading isLightOn from Firebase: $error');
+    final storedIsFanOn = prefs.getBool('isFanOn') ?? false;
+    setState(() {
+      isFanOn = storedIsFanOn;
     });
   }
 
@@ -91,6 +83,10 @@ class _FanLivState extends State<FanLiv> {
       setState(() {
         isFanOn = newValue;
       });
+
+      // Save the updated isFanOn value to SharedPreferences
+      prefs.setBool('isFanOn', newValue);
+
       print('isLightOn updated successfully');
     }).catchError((error) {
       print('Error updating isLightOn: $error');

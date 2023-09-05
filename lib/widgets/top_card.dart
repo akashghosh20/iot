@@ -196,9 +196,8 @@ class _TopCardState extends State<TopCard> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.calendar_month_outlined),
                       Text(
-                        '16 Aug, 2023',
+                        'Temperature : ',
                         style: TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ],

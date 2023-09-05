@@ -15,6 +15,7 @@ class LightLiv extends StatefulWidget {
 
 class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
   bool isLightOn = false;
+  bool userChangedLightState = false; // Track user interactions
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
   double? voltage = 200;
@@ -54,9 +55,12 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
       DataSnapshot snapshot = event.snapshot;
       final value = snapshot.value;
       if (value is bool) {
-        setState(() {
-          isLightOn = value;
-        });
+        if (!userChangedLightState) {
+          // Only update isLightOn if it wasn't changed by the user
+          setState(() {
+            isLightOn = value;
+          });
+        }
       }
     }).onError((error) {
       print('Error loading isLightOn from Firebase: $error');
@@ -93,7 +97,8 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      if (isLightOn) {
+      if (isLightOn && !userChangedLightState) {
+        // Only save when the user didn't change the state
         // Save the elapsed time when app is paused or inactive
         startTime = DateTime.now();
       }
@@ -113,6 +118,8 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
             elapsedDuration, voltage! * current! * 0.89 / 1000);
         saveElapsedUnit(elapsedUnitLightliv);
       }
+      // Reset the user interaction flag when the app is resumed
+      userChangedLightState = false;
     }
   }
 
@@ -142,6 +149,7 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
 
   void onLightSwitchChanged(bool newValue) {
     setState(() {
+      userChangedLightState = true; // Set the flag to indicate user interaction
       if (newValue) {
         startTime = DateTime.now();
       } else {

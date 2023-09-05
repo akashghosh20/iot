@@ -15,6 +15,7 @@ class OtherLiv extends StatefulWidget {
 
 class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
   bool isLightOn = false;
+  bool userChangedLightState = false; // Track user interactions
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
   double? voltage = 200;
@@ -54,16 +55,19 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
       DataSnapshot snapshot = event.snapshot;
       final value = snapshot.value;
       if (value is bool) {
-        setState(() {
-          isLightOn = value;
-        });
+        if (!userChangedLightState) {
+          // Only update isLightOn if it wasn't changed by the user
+          setState(() {
+            isLightOn = value;
+          });
+        }
       }
     }).onError((error) {
       print('Error loading isLightOn from Firebase: $error');
     });
   }
 
-// Function to update the isLightOn value in the database
+  // Function to update the isLightOn value in the database
   void updateIsLightOn(bool newValue) {
     databaseReference2 =
         FirebaseDatabase.instance.reference().child('switches');
@@ -82,7 +86,8 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      if (isLightOn) {
+      if (isLightOn && !userChangedLightState) {
+        // Only save when the user didn't change the state
         // Save the elapsed time when app is paused or inactive
         startTime = DateTime.now();
       }
@@ -92,26 +97,29 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
         final DateTime endTime = DateTime.now();
         elapsedDuration += endTime.difference(startTime!);
         startTime = null;
-        // saveElapsedTime(elapsedDuration);
+        saveElapsedTime(elapsedDuration);
 
         // Calculate and save elapsed taka
         double elapsedTaka = calculateElapsedTaka(
             elapsedDuration, voltage! * current! * 0.89 / 1000);
-        // saveElapsedTaka(elapsedTaka);
+        saveElapsedTaka(elapsedTaka);
         elapsedUnitLightliv = calculateElapsedUnit(
             elapsedDuration, voltage! * current! * 0.89 / 1000);
-        // saveElapsedUnit(elapsedUnitLightliv);
+        saveElapsedUnit(elapsedUnitLightliv);
       }
+      // Reset the user interaction flag when the app is resumed
+      userChangedLightState = false;
     }
   }
 
   Future<void> initializeSharedPreferences() async {
     prefs = await SharedPreferences.getInstance();
-    // loadElapsedTime();
+    loadElapsedTime();
   }
 
   void onLightSwitchChanged(bool newValue) {
     setState(() {
+      userChangedLightState = true; // Set the flag to indicate user interaction
       if (newValue) {
         startTime = DateTime.now();
       } else {
@@ -119,6 +127,15 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
           final DateTime endTime = DateTime.now();
           elapsedDuration += endTime.difference(startTime!);
           startTime = null;
+          saveElapsedTime(elapsedDuration);
+
+          // Calculate and save elapsed taka
+          double elapsedTaka = calculateElapsedTaka(
+              elapsedDuration, voltage! * current! * 0.89 / 1000);
+          saveElapsedTaka(elapsedTaka);
+          elapsedUnitLightliv = calculateElapsedUnit(
+              elapsedDuration, voltage! * current! * 0.89 / 1000);
+          saveElapsedUnit(elapsedUnitLightliv);
         }
       }
       updateIsLightOn(newValue);
@@ -261,5 +278,24 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
         ],
       ),
     );
+  }
+
+  Future<void> loadElapsedTime() async {
+    final storedDuration = prefs.getInt('lightLiv_elapsed_duration') ?? 0;
+    setState(() {
+      elapsedDuration = Duration(seconds: storedDuration);
+    });
+  }
+
+  Future<void> saveElapsedTime(Duration duration) async {
+    await prefs.setInt('lightLiv_elapsed_duration', duration.inSeconds);
+  }
+
+  Future<void> saveElapsedTaka(double taka) async {
+    await prefs.setDouble('lightLiv_elapsed_taka', taka);
+  }
+
+  Future<void> saveElapsedUnit(double unit) async {
+    await prefs.setDouble('lightLiv_elapsed_unit', unit);
   }
 }
