@@ -23,41 +23,26 @@ class _TopCardState extends State<TopCard> {
     // TODO: implement initState
     super.initState();
     databaseReference = FirebaseDatabase.instance.reference().child('temps');
-    loadTemperture();
+    loadTemperature();
     calculateTotalElapsedTaka();
   }
 
-  void loadTemperture() {
+  void loadTemperature() {
     if (databaseReference != null) {
-      databaseReference!.onValue.listen((event) {
+      databaseReference!.orderByKey().limitToLast(1).onChildAdded.listen(
+          (event) {
         DataSnapshot dataSnapshot = event.snapshot;
-        Map<dynamic, dynamic>? data =
-            dataSnapshot.value as Map<dynamic, dynamic>?;
+        dynamic data = dataSnapshot.value;
 
-        if (data != null) {
-          // Extract all current values from the data
-          List<double> currentValues = [];
-          print("Akash");
+        if (data is Map<dynamic, dynamic> && data.containsKey('value')) {
+          dynamic latestValue = data['value'];
 
-          data.forEach((timestamp, values) {
-            if (values is Map<dynamic, dynamic> &&
-                values.containsKey('value')) {
-              dynamic currentValue = values['value'];
-              if (currentValue is double || currentValue is int) {
-                double currentData = currentValue.toDouble();
-                currentValues.add(currentData);
-              }
-            }
-          });
+          if (latestValue is double || latestValue is int) {
+            double latestTemperature = latestValue.toDouble();
 
-          if (currentValues.isNotEmpty) {
-            // Calculate the average current value
-            double sum = currentValues.reduce((a, b) => a + b);
-            double averageCurrent = sum / currentValues.length;
-
-            // Update the state with the average current value
+            // Update the state with the latest temperature value
             setState(() {
-              temp = averageCurrent;
+              temp = latestTemperature;
             });
           }
         }
