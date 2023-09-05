@@ -34,7 +34,7 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
 
     // Initialize the database reference
     databaseReference =
-        FirebaseDatabase.instance.reference().child('data').child('3');
+        FirebaseDatabase.instance.reference().child('data').child('2');
     databaseReference2 = FirebaseDatabase.instance.reference();
 
     // Load current and voltage data from Firebase

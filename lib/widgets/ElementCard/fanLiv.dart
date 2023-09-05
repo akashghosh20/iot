@@ -28,7 +28,7 @@ class _FanLivState extends State<FanLiv> {
     super.initState();
     initializeSharedPreferences();
     databaseReference =
-        FirebaseDatabase.instance.reference().child('data').child('3');
+        FirebaseDatabase.instance.reference().child('data').child('1');
     databaseReference2 = FirebaseDatabase.instance.reference();
     loadCurrentAndVoltage();
   }

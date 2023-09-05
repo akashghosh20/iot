@@ -18,6 +18,7 @@ class _TopCardState extends State<TopCard> {
   double totalElapsedUnit = 0;
   DatabaseReference? databaseReference;
   double? temp;
+  String statues = "False";
   @override
   void initState() {
     // TODO: implement initState
@@ -70,6 +71,8 @@ class _TopCardState extends State<TopCard> {
     double lightLivElapsedUnit = prefs.getDouble('lightLiv_elapsed_unit') ?? 0;
     double lightBathElapsedUnit =
         prefs.getDouble('lightBath_elapsed_unit') ?? 0;
+    double totalUsedUnitLF = lightLivElapsedUnit + fanLivElapsedUnit;
+    double mainswitchUnit = prefs.getDouble('main_switch_elapsed_unit') ?? 0;
 
     double totalfan = fanLivElapsedTaka + fanBedElapsedTaka;
     double totalLight =
@@ -81,6 +84,9 @@ class _TopCardState extends State<TopCard> {
           lightBathElapsedUnit +
           lightLivElapsedUnit +
           lightBedElapsedUnit;
+      if (totalUsedUnitLF > mainswitchUnit) {
+        statues = "True";
+      }
     });
 
     // Save totalElapsedTaka in SharedPreferences
@@ -229,7 +235,15 @@ class _TopCardState extends State<TopCard> {
                   Row(
                     children: [
                       Text(
-                        'Temperature : ${temp?.toStringAsFixed(4)} C',
+                        'Temperature : ${temp?.toStringAsFixed(2)} C',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        'Status : ${statues} ',
                         style: TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ],

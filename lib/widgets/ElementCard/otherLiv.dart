@@ -29,15 +29,15 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    initializeSharedPreferences();
     WidgetsBinding.instance.addObserver(this);
 
     // Initialize the database reference
     databaseReference =
-        FirebaseDatabase.instance.reference().child('data').child('1');
+        FirebaseDatabase.instance.reference().child('data').child('3');
     databaseReference2 = FirebaseDatabase.instance.reference();
 
     // Load current and voltage data from Firebase
+
     loadCurrentAndVoltage();
     loadIsLightOn(); // Load the initial isLightOn value from the database
   }
@@ -209,7 +209,18 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
               ),
               Text('1 device'),
               customSwitch(isLightOn, onLightSwitchChanged),
-
+              Text(
+                'Elapsed Time: ${formatDuration(elapsedDuration)}',
+                style: TextStyle(fontSize: 12),
+              ),
+              Text(
+                'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, voltage! * current! * 0.89 / 1000)}',
+                style: TextStyle(fontSize: 12),
+              ),
+              Text(
+                'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, voltage! * current! * 0.89 / 1000)}',
+                style: TextStyle(fontSize: 12),
+              ),
               SizedBox(
                 height: 10,
               ),
@@ -219,20 +230,6 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
                       BorderRadius.circular(30), // Adjust the radius as needed
                   color: kButtonDarkBlue, // Button background color
                 ),
-                // child: ElevatedButton(
-                //   // onPressed: resetCalculations,
-                //   style: ElevatedButton.styleFrom(
-                //     primary: Colors.transparent, // Make the button transparent
-                //     elevation: 0, // Remove button elevation
-                //     padding: EdgeInsets.symmetric(
-                //         horizontal: 20,
-                //         vertical: 10), // Adjust padding as needed
-                //   ),
-                //   child: Text(
-                //     "Recalculate",
-                //     style: TextStyle(color: Colors.white),
-                //   ),
-                // ),
               ),
 
               // Display voltage value
@@ -242,6 +239,66 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
       );
     }
   }
+  // @override
+  // Widget build(BuildContext context) {
+  //   if (current == null || voltage == null) {
+  //     // Handle loading or error state
+  //     return CircularProgressIndicator(); // or show an error message
+  //   } else {
+  //     // Data is loaded, display your widget with current and voltage
+  //     return Container(
+  //       margin: EdgeInsets.all(8),
+  //       width: 150,
+  //       height: 300,
+  //       decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.circular(15),
+  //       ),
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(8.0),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Icon(Icons.lightbulb),
+  //             Text(
+  //               'Main Switch',
+  //               style: TextStyle(fontWeight: FontWeight.bold),
+  //             ),
+  //             Text('1 device'),
+  //             customSwitch(isLightOn, onLightSwitchChanged),
+
+  //             SizedBox(
+  //               height: 10,
+  //             ),
+  //             Container(
+  //               decoration: BoxDecoration(
+  //                 borderRadius:
+  //                     BorderRadius.circular(30), // Adjust the radius as needed
+  //                 color: kButtonDarkBlue, // Button background color
+  //               ),
+  //               // child: ElevatedButton(
+  //               //   // onPressed: resetCalculations,
+  //               //   style: ElevatedButton.styleFrom(
+  //               //     primary: Colors.transparent, // Make the button transparent
+  //               //     elevation: 0, // Remove button elevation
+  //               //     padding: EdgeInsets.symmetric(
+  //               //         horizontal: 20,
+  //               //         vertical: 10), // Adjust padding as needed
+  //               //   ),
+  //               //   child: Text(
+  //               //     "Recalculate",
+  //               //     style: TextStyle(color: Colors.white),
+  //               //   ),
+  //               // ),
+  //             ),
+
+  //             // Display voltage value
+  //           ],
+  //         ),
+  //       ),
+  //     );
+  //   }
+  // }
 
   String formatDuration(Duration duration) {
     return '${duration.inHours}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
@@ -296,6 +353,6 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
   }
 
   Future<void> saveElapsedUnit(double unit) async {
-    await prefs.setDouble('lightLiv_elapsed_unit', unit);
+    await prefs.setDouble('main_switch_elapsed_unit', unit);
   }
 }
