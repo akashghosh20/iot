@@ -15,8 +15,8 @@ class _FanLivState extends State<FanLiv> {
   bool isFanOn = false;
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
-  double wattOfFan = 75; // Assuming the fan power consumption in watts
-  double takaPerUnit = 10; // Cost per unit in your currency
+  double voltage = 200; // Assuming the fan power consumption in watts
+  double takaPerUnit = 4.14; // Cost per unit in your currency
   late SharedPreferences prefs;
   double elapsedUnitFanliv = 0;
   double? current;
@@ -109,10 +109,10 @@ class _FanLivState extends State<FanLiv> {
           saveElapsedTime(elapsedDuration);
 
           // Calculate and save elapsed taka
-          double elapsedTaka =
-              calculateElapsedTaka(elapsedDuration, wattOfFan / 1000);
-          elapsedUnitFanliv =
-              calculateElapsedUnit(elapsedDuration, wattOfFan / 1000);
+          double elapsedTaka = calculateElapsedTaka(
+              elapsedDuration, voltage * current! * 0.89 / 1000);
+          elapsedUnitFanliv = calculateElapsedUnit(
+              elapsedDuration, voltage * current! * 0.89 / 1000);
           saveElapsedUnit(elapsedUnitFanliv);
           saveElapsedTaka(elapsedTaka);
         }
@@ -191,11 +191,11 @@ class _FanLivState extends State<FanLiv> {
               style: TextStyle(fontSize: 12),
             ),
             Text(
-              'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, wattOfFan / 1000)}',
+              'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, voltage * current! * 0.89 / 1000)}',
               style: TextStyle(fontSize: 12),
             ),
             Text(
-              'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, wattOfFan / 1000)}',
+              'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, voltage * current! * 0.89 / 1000)}',
               style: TextStyle(fontSize: 12),
             ),
             Container(
