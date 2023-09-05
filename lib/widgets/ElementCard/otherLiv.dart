@@ -34,7 +34,7 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
     // Initialize the database reference
     databaseReference =
         FirebaseDatabase.instance.reference().child('data').child('1');
-    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
+    databaseReference2 = FirebaseDatabase.instance.reference();
 
     // Load current and voltage data from Firebase
     loadCurrentAndVoltage();
@@ -49,8 +49,8 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
 
   // Function to load the initial value of isLightOn from the database
   void loadIsLightOn() {
-    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
-    databaseReference2!.child('isMainSwitchOn').onValue.listen((event) {
+    databaseReference2 = FirebaseDatabase.instance.ref().child('switches');
+    databaseReference2!.child('main').onValue.listen((event) {
       DataSnapshot snapshot = event.snapshot;
       final value = snapshot.value;
       if (value is bool) {
@@ -65,8 +65,9 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
 
 // Function to update the isLightOn value in the database
   void updateIsLightOn(bool newValue) {
-    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
-    databaseReference2!.update({'isMainSwitchOn': newValue}).then((_) {
+    databaseReference2 =
+        FirebaseDatabase.instance.reference().child('switches');
+    databaseReference2!.update({'main': newValue}).then((_) {
       // Update the UI immediately when the value is updated in the database
       setState(() {
         isLightOn = newValue;

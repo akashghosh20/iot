@@ -30,7 +30,7 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
 
     // Initialize the database reference
     databaseReference =
-        FirebaseDatabase.instance.reference().child('sensor_data');
+        FirebaseDatabase.instance.ref().child('data').child('1');
 
     // Load current and voltage data from Firebase
     loadCurrentAndVoltage();
@@ -136,8 +136,8 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
             dataSnapshot.value as Map<dynamic, dynamic>?;
 
         if (data != null) {
-          double? currentData = data['current'] as double?;
-          double? voltageData = data['voltage'] as double?;
+          double? currentData = data['amp'] as double?;
+          double? voltageData = data['volt'] as double?;
 
           // Update the state with the loaded data
           setState(() {
