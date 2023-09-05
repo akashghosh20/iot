@@ -227,7 +227,7 @@ class _TopCardState extends State<TopCard> {
                             height: 4,
                           ),
                           Text(
-                            '345.56 kWh',
+                            '${totalElapsedTaka.toStringAsFixed(4)}',
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           ),
