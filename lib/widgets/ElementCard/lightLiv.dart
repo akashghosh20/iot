@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:project_neal/constant.dart';
@@ -15,12 +17,13 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
   bool isLightOn = false;
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
-  double? voltage;
+  double? voltage = 200;
   double? current;
   double takaPerUnit = 10;
   double elapsedUnitLightliv = 0;
   late SharedPreferences prefs;
   DatabaseReference? databaseReference;
+  DatabaseReference? databaseReference2;
 
   @override
   void initState() {
@@ -30,10 +33,12 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
 
     // Initialize the database reference
     databaseReference =
-        FirebaseDatabase.instance.reference().child('sensor_data');
+        FirebaseDatabase.instance.reference().child('data').child('1');
+    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
 
     // Load current and voltage data from Firebase
     loadCurrentAndVoltage();
+    // loadIsLightOn(); // Load the initial isLightOn value from the database
   }
 
   @override
@@ -41,6 +46,35 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+
+  // // Function to load the initial value of isLightOn from the database
+  // void loadIsLightOn() {
+  //   databaseReference = FirebaseDatabase.instance.reference().child('data');
+  //   databaseReference!
+  //       .child('isLightOn')
+  //       .once()
+  //       .then((DataSnapshot snapshot) {
+  //         final value = snapshot.value;
+  //         if (value is bool) {
+  //           setState(() {
+  //             isLightOn = value;
+  //           });
+  //         }
+  //       } as FutureOr Function(DatabaseEvent value))
+  //       .catchError((error) {
+  //     print('Error loading isLightOn from Firebase: $error');
+  //   });
+  // }
+
+  // // Function to update the isLightOn value in the database
+  // void updateIsLightOn(bool newValue) {
+  //   databaseReference = FirebaseDatabase.instance.reference().child('data');
+  //   databaseReference!.update({'isLightOn': newValue}).then((_) {
+  //     print('isLightOn updated successfully');
+  //   }).catchError((error) {
+  //     print('Error updating isLightOn: $error');
+  //   });
+  // }
 
   void resetCalculations() {
     setState(() {
@@ -125,6 +159,9 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
         }
       }
       isLightOn = newValue;
+
+      // Update the isLightOn value in the database when the switch changes
+      // updateIsLightOn(isLightOn);
     });
   }
 
@@ -136,14 +173,28 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
             dataSnapshot.value as Map<dynamic, dynamic>?;
 
         if (data != null) {
-          double? currentData = data['current'] as double?;
-          double? voltageData = data['voltage'] as double?;
+          // Extract all current values from the data
+          List<double> currentValues = [];
 
-          // Update the state with the loaded data
-          setState(() {
-            current = currentData;
-            voltage = voltageData;
+          data.forEach((timestamp, values) {
+            if (values is Map<dynamic, dynamic> && values.containsKey('amp')) {
+              double? currentData = values['amp'] as double?;
+              if (currentData != null) {
+                currentValues.add(currentData);
+              }
+            }
           });
+
+          if (currentValues.isNotEmpty) {
+            // Calculate the average current value
+            double sum = currentValues.reduce((a, b) => a + b);
+            double averageCurrent = sum / currentValues.length;
+
+            // Update the state with the average current value
+            setState(() {
+              current = averageCurrent;
+            });
+          }
         }
       }, onError: (error) {
         print('Error loading data from Firebase: $error');
