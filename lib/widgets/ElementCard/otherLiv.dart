@@ -19,7 +19,7 @@ class _OtherLivState extends State<OtherLiv> with WidgetsBindingObserver {
   Duration elapsedDuration = Duration.zero;
   double? voltage = 200;
   double? current;
-  double takaPerUnit = 10;
+  double takaPerUnit = 4.14;
   double elapsedUnitLightliv = 0;
   late SharedPreferences prefs;
   DatabaseReference? databaseReference;
