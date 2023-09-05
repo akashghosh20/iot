@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:project_neal/constant.dart';
 import 'package:project_neal/widgets/GraphShow.dart';
@@ -15,12 +16,58 @@ class _TopCardState extends State<TopCard> {
   late SharedPreferences prefs;
   double totalElapsedTaka = 0; // Sum of elapsed taka values
   double totalElapsedUnit = 0;
-
+  DatabaseReference? databaseReference;
+  double? temp;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    databaseReference = FirebaseDatabase.instance.reference().child('temps');
+    loadTemperture();
     calculateTotalElapsedTaka();
+  }
+
+  void loadTemperture() {
+    if (databaseReference != null) {
+      databaseReference!.onValue.listen((event) {
+        DataSnapshot dataSnapshot = event.snapshot;
+        Map<dynamic, dynamic>? data =
+            dataSnapshot.value as Map<dynamic, dynamic>?;
+
+        if (data != null) {
+          // Extract all current values from the data
+          List<double> currentValues = [];
+          print("Akash");
+
+          data.forEach((timestamp, values) {
+            if (values is Map<dynamic, dynamic> &&
+                values.containsKey('value')) {
+              dynamic currentValue = values['value'];
+              if (currentValue is double || currentValue is int) {
+                double currentData = currentValue.toDouble();
+                currentValues.add(currentData);
+              }
+            }
+          });
+
+          if (currentValues.isNotEmpty) {
+            // Calculate the average current value
+            double sum = currentValues.reduce((a, b) => a + b);
+            double averageCurrent = sum / currentValues.length;
+
+            // Update the state with the average current value
+            setState(() {
+              temp = averageCurrent;
+            });
+          }
+        }
+      }, onError: (error) {
+        print('Error loading data from Firebase: $error');
+      });
+    } else {
+      print(
+          'Database reference is null. Make sure it is properly initialized.');
+    }
   }
 
   Future<void> calculateTotalElapsedTaka() async {
@@ -197,7 +244,7 @@ class _TopCardState extends State<TopCard> {
                   Row(
                     children: [
                       Text(
-                        'Temperature : ',
+                        'Temperature : ${temp?.toStringAsFixed(4)} C',
                         style: TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ],
