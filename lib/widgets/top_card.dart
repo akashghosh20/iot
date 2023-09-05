@@ -146,21 +146,21 @@ class _TopCardState extends State<TopCard> {
                               30), // Adjust the radius as needed
                           color: kButtonDarkBlue, // Button background color
                         ),
-                        child: ElevatedButton(
-                          onPressed: resetValues,
-                          style: ElevatedButton.styleFrom(
-                            primary: Colors
-                                .transparent, // Make the button transparent
-                            elevation: 0, // Remove button elevation
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 2), // Adjust padding as needed
-                          ),
-                          child: Text(
-                            "Reset",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
+                        // child: ElevatedButton(
+                        //   onPressed: resetValues,
+                        //   style: ElevatedButton.styleFrom(
+                        //     primary: Colors
+                        //         .transparent, // Make the button transparent
+                        //     elevation: 0, // Remove button elevation
+                        //     padding: EdgeInsets.symmetric(
+                        //         horizontal: 10,
+                        //         vertical: 2), // Adjust padding as needed
+                        //   ),
+                        //   child: Text(
+                        //     "Reset",
+                        //     style: TextStyle(color: Colors.white),
+                        //   ),
+                        // ),
                       ),
                       SizedBox(
                         width: 5,
