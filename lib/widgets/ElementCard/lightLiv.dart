@@ -38,7 +38,7 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
 
     // Load current and voltage data from Firebase
     loadCurrentAndVoltage();
-    // loadIsLightOn(); // Load the initial isLightOn value from the database
+    loadIsLightOn(); // Load the initial isLightOn value from the database
   }
 
   @override
@@ -47,34 +47,35 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // // Function to load the initial value of isLightOn from the database
-  // void loadIsLightOn() {
-  //   databaseReference = FirebaseDatabase.instance.reference().child('data');
-  //   databaseReference!
-  //       .child('isLightOn')
-  //       .once()
-  //       .then((DataSnapshot snapshot) {
-  //         final value = snapshot.value;
-  //         if (value is bool) {
-  //           setState(() {
-  //             isLightOn = value;
-  //           });
-  //         }
-  //       } as FutureOr Function(DatabaseEvent value))
-  //       .catchError((error) {
-  //     print('Error loading isLightOn from Firebase: $error');
-  //   });
-  // }
+  // Function to load the initial value of isLightOn from the database
+  void loadIsLightOn() {
+    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
+    databaseReference2!.child('isLightOn').onValue.listen((event) {
+      DataSnapshot snapshot = event.snapshot;
+      final value = snapshot.value;
+      if (value is bool) {
+        setState(() {
+          isLightOn = value;
+        });
+      }
+    }).onError((error) {
+      print('Error loading isLightOn from Firebase: $error');
+    });
+  }
 
-  // // Function to update the isLightOn value in the database
-  // void updateIsLightOn(bool newValue) {
-  //   databaseReference = FirebaseDatabase.instance.reference().child('data');
-  //   databaseReference!.update({'isLightOn': newValue}).then((_) {
-  //     print('isLightOn updated successfully');
-  //   }).catchError((error) {
-  //     print('Error updating isLightOn: $error');
-  //   });
-  // }
+// Function to update the isLightOn value in the database
+  void updateIsLightOn(bool newValue) {
+    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
+    databaseReference2!.update({'isLightOn': newValue}).then((_) {
+      // Update the UI immediately when the value is updated in the database
+      setState(() {
+        isLightOn = newValue;
+      });
+      print('isLightOn updated successfully');
+    }).catchError((error) {
+      print('Error updating isLightOn: $error');
+    });
+  }
 
   void resetCalculations() {
     setState(() {
@@ -158,7 +159,7 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
           saveElapsedTaka(elapsedTaka);
         }
       }
-      isLightOn = newValue;
+      updateIsLightOn(newValue);
 
       // Update the isLightOn value in the database when the switch changes
       // updateIsLightOn(isLightOn);
