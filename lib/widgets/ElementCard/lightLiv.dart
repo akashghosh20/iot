@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:project_neal/constant.dart';
@@ -17,13 +15,12 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
   bool isLightOn = false;
   DateTime? startTime;
   Duration elapsedDuration = Duration.zero;
-  double? voltage = 200;
+  double? voltage;
   double? current;
   double takaPerUnit = 10;
   double elapsedUnitLightliv = 0;
   late SharedPreferences prefs;
   DatabaseReference? databaseReference;
-  DatabaseReference? databaseReference2;
 
   @override
   void initState() {
@@ -33,48 +30,16 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
 
     // Initialize the database reference
     databaseReference =
-        FirebaseDatabase.instance.reference().child('data').child('1');
-    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
+        FirebaseDatabase.instance.reference().child('sensor_data');
 
     // Load current and voltage data from Firebase
     loadCurrentAndVoltage();
-    loadIsLightOn(); // Load the initial isLightOn value from the database
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  // Function to load the initial value of isLightOn from the database
-  void loadIsLightOn() {
-    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
-    databaseReference2!.child('isLightOn').onValue.listen((event) {
-      DataSnapshot snapshot = event.snapshot;
-      final value = snapshot.value;
-      if (value is bool) {
-        setState(() {
-          isLightOn = value;
-        });
-      }
-    }).onError((error) {
-      print('Error loading isLightOn from Firebase: $error');
-    });
-  }
-
-// Function to update the isLightOn value in the database
-  void updateIsLightOn(bool newValue) {
-    databaseReference2 = FirebaseDatabase.instance.reference().child('data');
-    databaseReference2!.update({'isLightOn': newValue}).then((_) {
-      // Update the UI immediately when the value is updated in the database
-      setState(() {
-        isLightOn = newValue;
-      });
-      print('isLightOn updated successfully');
-    }).catchError((error) {
-      print('Error updating isLightOn: $error');
-    });
   }
 
   void resetCalculations() {
@@ -159,10 +124,7 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
           saveElapsedTaka(elapsedTaka);
         }
       }
-      updateIsLightOn(newValue);
-
-      // Update the isLightOn value in the database when the switch changes
-      // updateIsLightOn(isLightOn);
+      isLightOn = newValue;
     });
   }
 
@@ -174,28 +136,14 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
             dataSnapshot.value as Map<dynamic, dynamic>?;
 
         if (data != null) {
-          // Extract all current values from the data
-          List<double> currentValues = [];
+          double? currentData = data['current'] as double?;
+          double? voltageData = data['voltage'] as double?;
 
-          data.forEach((timestamp, values) {
-            if (values is Map<dynamic, dynamic> && values.containsKey('amp')) {
-              double? currentData = values['amp'] as double?;
-              if (currentData != null) {
-                currentValues.add(currentData);
-              }
-            }
+          // Update the state with the loaded data
+          setState(() {
+            current = currentData;
+            voltage = voltageData;
           });
-
-          if (currentValues.isNotEmpty) {
-            // Calculate the average current value
-            double sum = currentValues.reduce((a, b) => a + b);
-            double averageCurrent = sum / currentValues.length;
-
-            // Update the state with the average current value
-            setState(() {
-              current = averageCurrent;
-            });
-          }
         }
       }, onError: (error) {
         print('Error loading data from Firebase: $error');
@@ -238,11 +186,11 @@ class _LightLivState extends State<LightLiv> with WidgetsBindingObserver {
                 style: TextStyle(fontSize: 12),
               ),
               Text(
-                'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, voltage! * current! * 0.89 / 1000)}',
+                'Elapsed Unit: ${calculateElapsedUnit(elapsedDuration, voltage! * current! * 0.89 / 1000).toStringAsFixed(8)}',
                 style: TextStyle(fontSize: 12),
               ),
               Text(
-                'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, voltage! * current! * 0.89 / 1000)}',
+                'Elapsed Taka: ${calculateElapsedTaka(elapsedDuration, voltage! * current! * 0.89 / 1000).toStringAsFixed(8)}',
                 style: TextStyle(fontSize: 12),
               ),
               SizedBox(
